@@ -13,7 +13,7 @@
     },
     "autoload":          {
         "psr-4":                 {
-            "phpDox\\Generator\\Engine\\": "src/"
+            "TheSeer\\phpDox\\Generator\\Engine\\": "src/"
         },
         "exclude-from-classmap": [ "Tests/" ]
     },
