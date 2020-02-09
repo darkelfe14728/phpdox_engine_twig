@@ -7,4 +7,19 @@ namespace TheSeer\phpDox\Generator\Engine\Objects;
  *
  * @package TheSeer\phpDox\Generator\Engine\Objects
  */
-interface IObject {}
+interface IObject {
+    /**
+     * The variable name in Twig
+     *
+     * @return string The Twig variable name
+     */
+    public function getVarName(): string;
+    /**
+     * The object name (i.e. class name, interface name, ...)
+     *
+     * Used to generate output filename
+     *
+     * @return string The object name
+     */
+    public function getObjectName(): string;
+}

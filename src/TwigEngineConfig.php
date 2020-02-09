@@ -2,6 +2,7 @@
 
 namespace TheSeer\phpDox\Generator\Engine;
 
+use Monolog\Logger;
 use TheSeer\phpDox\BuildConfig;
 
 /**
@@ -13,7 +14,7 @@ class TwigEngineConfig extends BuildConfig {
     /**
      * Get template directory
      *
-     * Default: template/twig
+     * Default: <output_dir>/template/twig
      *
      * @return string Template directory path
      */
@@ -25,35 +26,12 @@ class TwigEngineConfig extends BuildConfig {
             return $default;
         }
 
-        if ($node->hasAttribute('path')) {
-            return $node->getAttribute('path', $default);
-        }
-
-        return $node->getAttribute('dir', $default);
-    }
-
-    /**
-     * Get compilation cache directory
-     *
-     * Default: template/twig/cache
-     *
-     * @return string Template's resources directory path
-     */
-    public function getCacheDirectory (): string {
-        $default = $this->getGeneratorConfig()->getProjectConfig()->getWorkDirectory()->getPathname() . '/twig';
-        $node = $this->ctx->queryOne('cfg:cache');
-
-        if (!$node) {
-            return $default;
-        }
-
         return $node->getAttribute('path', $default);
     }
-
     /**
      * Get resources directory
      *
-     * Default: template/twig/resources
+     * Default: <output_dir>/template/twig/resources
      *
      * @return string Template's resources directory path
      */
@@ -66,6 +44,58 @@ class TwigEngineConfig extends BuildConfig {
         }
 
         return $node->getAttribute('path', $default);
+    }
+    /**
+     * Get build cache directory
+     *
+     * Default: <working_dir>/twig/cache
+     *
+     * @return string Template's resources directory path
+     */
+    public function getCacheDirectory (): string {
+        $default = $this->getGeneratorConfig()->getProjectConfig()->getWorkDirectory()->getPathname() . '/twig/cache';
+        $node = $this->ctx->queryOne('cfg:cache');
+
+        if (!$node) {
+            return $default;
+        }
+
+        return $node->getAttribute('path', $default);
+    }
+
+    /**
+     * Get build log file
+     *
+     * Default: <working_dir>/twig/build.log
+     *
+     * @return string Build log file path
+     */
+    public function getLogFile (): string {
+        $default = $this->getGeneratorConfig()->getProjectConfig()->getWorkDirectory()->getPathname() . '/twig/build.log';
+        $node = $this->ctx->queryOne('cfg:log');
+
+        if (!$node) {
+            return $default;
+        }
+
+        return $node->getAttribute('path', $default);
+    }
+    /**
+     * Get build log minimum level
+     *
+     * Default: warning
+     *
+     * @return string|int Build log minimum level
+     */
+    public function getLogLevel () {
+        $default = Logger::WARNING;
+        $node = $this->ctx->queryOne('cfg:log');
+
+        if (!$node) {
+            return $default;
+        }
+
+        return $node->getAttribute('level', $default);
     }
 
     /**

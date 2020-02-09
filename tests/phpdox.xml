@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<phpdox xmlns="http://xml.phpdox.net/config" silent="false">
+    <bootstrap>
+        <require file="../bootstrap.php"/>
+    </bootstrap>
+    <project name="test" source="${basedir}/src" workdir="${basedir}/build">
+        <collector publiconly="false" backend="parser" encoding="utf-8">
+            <include mask="*.php"/>
+            <exclude mask=""/>
+
+            <inheritance resolve="true"/>
+        </collector>
+
+        <generator output="${basedir}/output">
+            <enrich base="${basedir}/build"/>
+
+            <build engine="twig" enabled="true" output="">
+                <template path="${basedir}/../template"/>
+                <log level="debug"/>
+                <file extension="html"/>
+            </build>
+        </generator>
+    </project>
+</phpdox>

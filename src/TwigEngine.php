@@ -2,13 +2,16 @@
 
 namespace TheSeer\phpDox\Generator\Engine;
 
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use TheSeer\phpDox\Generator\ClassEndEvent;
+use TheSeer\phpDox\Generator\Engine\Objects\ClassObject;
 use TheSeer\phpDox\Generator\Engine\Objects\IObject;
 use TheSeer\phpDox\Generator\PHPDoxEndEvent;
 use TheSeer\phpDox\Generator\PHPDoxStartEvent;
 use Twig\Environment;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
+use Twig\Error\Error;
 use Twig\Loader\FilesystemLoader;
 
 /**
@@ -21,7 +24,10 @@ class TwigEngine implements EngineInterface {
      * @var TwigEngineConfig The engine configuration
      */
     private $config;
-
+    /**
+     * @var Logger The logger
+     */
+    private $logger;
     /**
      * @var Environment The Twig main variable (environment)
      */
@@ -45,6 +51,27 @@ class TwigEngine implements EngineInterface {
     public function registerEventHandlers (EventHandlerRegistry $registry): void {
         $registry->addHandler('phpdox.start', $this, 'start');
         $registry->addHandler('phpdox.end', $this, 'finish');
+
+        $registry->addHandler('class.end', $this, 'renderClass');
+    }
+
+    /**
+     * Create the logger
+     *
+     * @param string $logFile The log file
+     */
+    private function createLogger(string $logFile): void {
+        $formatter = new LineFormatter("[%datetime%] [%channel%] %level_name%: %message% %context% %extra%\n", 'Y-m-d H:i:s');
+        $formatter->ignoreEmptyContextAndExtra(true);
+
+        $handler = new StreamHandler($logFile, $this->config->getLogLevel());
+        $handler->setFormatter($formatter);
+
+        $this->logger = new Logger('twig');
+        $this->logger->pushHandler($handler);
+    }
+    private function objectNameToFileName (string $objectName): string {
+        return preg_replace('@[/\\\\:]@i', '_', $objectName);
     }
 
     /**
@@ -53,45 +80,99 @@ class TwigEngine implements EngineInterface {
      * @param PHPDoxStartEvent $event The start event
      */
     public function start (/** @noinspection PhpUnusedParameterInspection */PHPDoxStartEvent $event): void {
+        $logFile = $this->config->getLogFile();
+        if (file_exists($logFile)) {
+            unlink($logFile);
+        }
+
+        $this->createLogger($logFile);
+        $this->logger->debug('Build start');
+
+        $cache = $this->config->getCacheDirectory();
+        if (empty($cache)) {
+            $cache = false;         // If cache path is explicitly empty, then disable cache
+        }
+        $this->logger->debug('Twig cache directory : ' . ($cache === false ? '<no cache>' : $cache));
+
         $loader = new FilesystemLoader($this->config->getTemplateDirectory());
         $this->twig = new Environment(
             $loader,
             [
-                'cache' => $this->config->getCacheDirectory(),
+                'cache' => $cache,
             ]
         );
+        $this->logger->debug('Twig is ready');
     }
     /**
      * When build finish
      *
      * @param PHPDoxEndEvent $event The end event
      */
-    public function finish (PHPDoxEndEvent $event): void {
+    public function finish (/** @noinspection PhpUnusedParameterInspection */PHPDoxEndEvent $event): void {
         /// TODO copy 'resources' directory
+
+        $this->logger->debug('Close Twig');
+        unset($this->twig);
+
+        $this->logger->debug('Build finished');
+        $this->logger->close();
+        unset($this->logger);
     }
 
     /**
      * Render a template about an object
      *
-     * @param string  $template The relative path of the template
-     * @param string  $outputFilename The relative output filename (without extension)
-     * @param IObject $object The object to render
+     * @param string  $templateName       The relative path of the template
+     * @param string  $outputSubdirectory The relative output filename (without extension)
+     * @param IObject $object             The object to render
      *
-     * @throws LoaderError When template load failed
-     * @throws RuntimeError When render failed
-     * @throws SyntaxError When template syntax has errors
+     * @return bool True if render succeed, else False
      */
-    private function render (string $template, string $outputFilename, IObject $object): void {
-        $object_className = get_class($object);
-        $object_name = strtolower(substr($object_className, 0, strlen($object_className) - strlen('Object')));
+    private function render (string $templateName, string $outputSubdirectory, IObject $object): bool {
+        $templateFile = $templateName . '.' . $this->config->getFileExtension() . '.twig';
+        $outputDir = $this->config->getOutputDirectory() . '/' . $outputSubdirectory . '/';
+        $outputFile = $outputDir . $this->objectNameToFileName($object->getObjectName()) . '.' . $this->config->getFileExtension();
 
-        $tpl = $this->twig->load($this->config->getTemplateDirectory() . $template);
-        $output = $tpl->render(
-            [
-                $object_name => $object
-            ]
-        );
+        if (!is_dir($outputDir)) {
+            $this->logger->info('Output directory "' . $outputDir . '" is missing : create');
+            if (!mkdir($outputDir, 0755, true)) {
+                $this->logger->error('Failed to create output directory "' . $outputDir . '"');
+                return false;
+            }
+        }
 
-        file_put_contents( $this->config->getOutputDirectory() . $outputFilename . $this->config->getFileExtension(), $output);
+        $this->logger->debug('Load template : ' . $templateFile);
+        try {
+            $tpl = $this->twig->load($templateFile);
+            $output = $tpl->render(
+                [
+                    $object->getVarName() => $object
+                ]
+            );
+        }
+        catch (Error $e) {
+            $this->logger->error('Failed to render using Twig : ' . $e->getMessage(), ['exception' => $e]);
+            return false;
+        }
+
+        $this->logger->debug('Output file : ' . $outputFile);
+        if (file_put_contents($outputFile, $output) === false) {
+            $this->logger->error('Failed to write output file : ' . $outputFile);
+            return false;
+        }
+        return true;
+    }
+    /**
+     * Render a class
+     *
+     * @param ClassEndEvent $event The class event
+     */
+    public function renderClass (ClassEndEvent $event): void {
+        $class = new ClassObject($event);
+
+        $this->logger->debug('Render class ' . $class->getFQDN());
+        if (!$this->render('class', 'classes', $class)) {
+            return;
+        }
     }
 }
