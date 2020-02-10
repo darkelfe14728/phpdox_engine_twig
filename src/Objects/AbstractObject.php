@@ -8,6 +8,11 @@ use TheSeer\phpDox\Collector\AbstractUnitObject;
 
 abstract class AbstractObject implements IObject {
     /**
+     * @var string The XML namespace prefix for phpDox
+     */
+    public const XML_PREFIX = 'dox';
+
+    /**
      * @var fDOMDocument The DOM structure
      */
     protected $dom;
@@ -20,8 +25,15 @@ abstract class AbstractObject implements IObject {
     public function __construct (fDOMDocument $dom) {
         $this->dom = $dom;
         try {
-            $this->dom->getDOMXPath()->registerNamespace('dox', AbstractUnitObject::XMLNS);
+            $this->dom->getDOMXPath()->registerNamespace(self::XML_PREFIX, AbstractUnitObject::XMLNS);
         }
         catch(fDOMException $e) {}
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getObjectValue (): ?XmlWrapper {
+        return new XmlWrapper($this->dom->query('/' . self::XML_PREFIX . ':' . $this->getVarName()));
     }
 }

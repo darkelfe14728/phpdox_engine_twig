@@ -70,6 +70,13 @@ class TwigEngine implements EngineInterface {
         $this->logger = new Logger('twig');
         $this->logger->pushHandler($handler);
     }
+    /**
+     * Transform an object name (FQDN) to an usable filename
+     *
+     * @param string $objectName The object name
+     *
+     * @return string The filename
+     */
     private function objectNameToFileName (string $objectName): string {
         return preg_replace('@[/\\\\:]@i', '_', $objectName);
     }
@@ -146,7 +153,7 @@ class TwigEngine implements EngineInterface {
             $tpl = $this->twig->load($templateFile);
             $output = $tpl->render(
                 [
-                    $object->getVarName() => $object
+                    $object->getVarName() => $object->getObjectValue()
                 ]
             );
         }
@@ -170,7 +177,7 @@ class TwigEngine implements EngineInterface {
     public function renderClass (ClassEndEvent $event): void {
         $class = new ClassObject($event);
 
-        $this->logger->debug('Render class ' . $class->getFQDN());
+        $this->logger->debug('Render class ' . $class->getObjectName());
         if (!$this->render('class', 'classes', $class)) {
             return;
         }

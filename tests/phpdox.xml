@@ -3,7 +3,7 @@
     <bootstrap>
         <require file="../bootstrap.php"/>
     </bootstrap>
-    <project name="test" source="${basedir}/src" workdir="${basedir}/build">
+    <project name="test" source="${basedir}/../src" workdir="${basedir}/build">
         <collector publiconly="false" backend="parser" encoding="utf-8">
             <include mask="*.php"/>
             <exclude mask=""/>
@@ -16,6 +16,7 @@
 
             <build engine="twig" enabled="true" output="">
                 <template path="${basedir}/../template"/>
+                <cache path="" />
                 <log level="debug"/>
                 <file extension="html"/>
             </build>

@@ -22,4 +22,10 @@ interface IObject {
      * @return string The object name
      */
     public function getObjectName(): string;
+    /**
+     * The object value
+     *
+     * @return XmlWrapper|null The object value
+     */
+    public function getObjectValue(): ?XmlWrapper;
 }

@@ -1,1 +1,11 @@
-Class {{ class.FQDN }}
+Class {{ class.full }}
+
+First Method : {{  class.interface.method[0].name }}
+
+{#
+<ul>
+    {% for method in class.interface.method %}
+        <li>{{ method.name }}</li>
+    {% endfor %}
+</ul>
+#}

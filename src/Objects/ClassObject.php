@@ -24,15 +24,6 @@ class ClassObject extends AbstractObject {
      * @inheritDoc
      */
     public function getObjectName (): string {
-        return $this->getFQDN();
-    }
-
-    /**
-     * The fully qualified class name
-     *
-     * @return string The class FQDN
-     */
-    public function getFQDN(): string {
-        return $this->dom->queryOne('/dox:class/@full')->textContent;
+        return $this->dom->queryOne('/' . self::XML_PREFIX . ':class/@full')->textContent;
     }
 }
