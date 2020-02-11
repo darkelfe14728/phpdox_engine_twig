@@ -8,6 +8,7 @@ use Monolog\Logger;
 use TheSeer\phpDox\Generator\ClassEndEvent;
 use TheSeer\phpDox\Generator\Engine\Objects\ClassObject;
 use TheSeer\phpDox\Generator\Engine\Objects\IObject;
+use TheSeer\phpDox\Generator\Engine\Objects\XmlWrapper;
 use TheSeer\phpDox\Generator\PHPDoxEndEvent;
 use TheSeer\phpDox\Generator\PHPDoxStartEvent;
 use Twig\Environment;
@@ -20,6 +21,11 @@ use Twig\Loader\FilesystemLoader;
  * @package TheSeer\phpDox\Generator\Engine
  */
 class TwigEngine implements EngineInterface {
+    /**
+     * @var string The XML namespace prefix for phpDox
+     */
+    public const XML_PREFIX_PHPDOC = 'phpdox';
+
     /**
      * @var TwigEngineConfig The engine configuration
      */
@@ -86,7 +92,7 @@ class TwigEngine implements EngineInterface {
      *
      * @param PHPDoxStartEvent $event The start event
      */
-    public function start (/** @noinspection PhpUnusedParameterInspection */PHPDoxStartEvent $event): void {
+    public function start (PHPDoxStartEvent $event): void {
         $logFile = $this->config->getLogFile();
         if (file_exists($logFile)) {
             unlink($logFile);
@@ -109,6 +115,13 @@ class TwigEngine implements EngineInterface {
             ]
         );
         $this->logger->debug('Twig is ready');
+
+        $this->twig->addGlobal('XML_PREFIX_PHPDOC', self::XML_PREFIX_PHPDOC);
+        $this->twig->addGlobal('project', XmlWrapper::createFromNode($this->config->getProjectNode()));
+        $this->twig->addGlobal('index', XmlWrapper::createFromNode($event->getIndex()->asDom()->documentElement));
+        $this->twig->addGlobal('source_tree', XmlWrapper::createFromNode($event->getTree()->asDom()->documentElement));
+
+        $this->logger->debug('Twig global variables added');
     }
     /**
      * When build finish
@@ -153,7 +166,7 @@ class TwigEngine implements EngineInterface {
             $tpl = $this->twig->load($templateFile);
             $output = $tpl->render(
                 [
-                    $object->getVarName() => $object->getObjectValue()
+                    $object->getVarName() => $object->getObjectValue(),
                 ]
             );
         }

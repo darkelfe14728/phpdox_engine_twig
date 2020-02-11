@@ -3,7 +3,7 @@
     <bootstrap>
         <require file="../bootstrap.php"/>
     </bootstrap>
-    <project name="test" source="${basedir}/../src" workdir="${basedir}/build">
+    <project name="PHPDox Generator : Twig" source="${basedir}/../src" workdir="${basedir}/build">
         <collector publiconly="false" backend="parser" encoding="utf-8">
             <include mask="*.php"/>
             <exclude mask=""/>
@@ -14,11 +14,16 @@
         <generator output="${basedir}/output">
             <enrich base="${basedir}/build"/>
 
-            <build engine="twig" enabled="true" output="">
+            <build engine="twig" enabled="true" output="twig">
                 <template path="${basedir}/../template"/>
                 <cache path="" />
                 <log level="debug"/>
                 <file extension="html"/>
+            </build>
+
+            <build engine="html" enabled="true" output="html">
+                <template path="${basedir}/../vendor/theseer/phpdox/templates/html"/>
+                <file extension="xhtml"/>
             </build>
         </generator>
     </project>

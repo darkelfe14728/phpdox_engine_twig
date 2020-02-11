@@ -1,11 +1,8 @@
-Class {{ class.full }}
+{% extends 'base.html.twig' %}
 
-First Method : {{  class.interface.method[0].name }}
+{% block title %}Class {{ class.full }}{% endblock %}
 
-{#
-<ul>
-    {% for method in class.interface.method %}
-        <li>{{ method.name }}</li>
-    {% endfor %}
-</ul>
-#}
+{% block page %}
+    {{ XML_PREFIX_PHPDOC }}
+{% endblock %}
+

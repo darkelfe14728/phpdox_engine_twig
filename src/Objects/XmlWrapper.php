@@ -12,6 +12,7 @@ use DOMXPath;
 use Error;
 use IteratorIterator;
 use TheSeer\phpDox\Collector\AbstractUnitObject;
+use TheSeer\phpDox\Generator\Engine\TwigEngine;
 
 /**
  * A Twig wrapper for XML
@@ -56,22 +57,92 @@ class XmlWrapper extends IteratorIterator implements Countable, ArrayAccess {
     }
 
     /**
-     * Get the first element of internal list
+     * The first element of list, directly as DOMElement
      *
-     * @return DOMElement|null The first element or null if list is empty
+     * @return DOMElement|null The first element
      */
-    private function getFirstElement (): ?DOMElement {
+    public function asRawNode(): ?DOMElement {
         if ($this->list->length == 0)
             return null;
 
         /** @var DOMElement $element */$element = $this->list[0];
         if (is_null($this->xpath)) {
             $this->xpath = new DOMXPath($element->ownerDocument);
-            $this->xpath->registerNamespace(AbstractObject::XML_PREFIX, AbstractUnitObject::XMLNS);
+            $this->xpath->registerNamespace(TwigEngine::XML_PREFIX_PHPDOC, AbstractUnitObject::XMLNS);
         }
 
         return $element;
     }
+    /**
+     * The list, directly as DOMNodeList
+     *
+     * @return DOMNodeList The list
+     */
+    public function asRawList(): DOMNodeList {
+        return $this->list;
+    }
+    /**
+     * Return first element as XML
+     *
+     * @return string The XML
+     */
+    public function asXml (): string {
+        $element = $this->asRawNode();
+        if (is_null($element))
+            return '';
+
+        return $element->ownerDocument->saveXML($element);
+    }
+
+    /**
+     * Check if a XPath element exists
+     *
+     * @param string $xpath The XPath query
+     *
+     * @return bool True if the XPath query as returned something
+     */
+    public function xpathExists (string $xpath): bool {
+        $element = $this->asRawNode();
+        if (is_null($element)) {
+            return false;
+        }
+
+        if (substr($xpath, 0, 2) != './') {
+            $xpath = './' . $xpath;
+        }
+
+        $sublist = $this->xpath->query($xpath, $element);
+        if ($sublist->length > 0) {
+            return true;
+        }
+
+        return false;
+    }
+    /**
+     * Get a XPath element
+     *
+     * @param string $xpath The XPath query
+     *
+     * @return XmlWrapper|null The elements corresponding to XPath query or Null if nothing found
+     */
+    public function xpathGet (string $xpath): ?XmlWrapper {
+        $element = $this->asRawNode();
+        if (is_null($element)) {
+            return null;
+        }
+
+        if (substr($xpath, 0, 2) != './') {
+            $xpath = './' . $xpath;
+        }
+
+        $sublist = $this->xpath->query($xpath, $element);
+        if ($sublist->length > 0) {
+            return new XmlWrapper($sublist);
+        }
+
+        return null;
+    }
+
     /**
      * Check if an element exists
      *
@@ -85,32 +156,15 @@ class XmlWrapper extends IteratorIterator implements Countable, ArrayAccess {
             return isset($this->list[$nameOffset]);
         }
 
-        // Case of a name
-        $element = $this->getFirstElement();
-        if (is_null($element)) {
-            return false;
-        }
-
-        // First, search for an attribute
-        $sublist = $this->xpath->query('./@' . $nameOffset, $element);
-        if ($sublist->length > 0) {
-            return true;
-        }
-
-        // Then search a child
-        $sublist = $this->xpath->query('./' . AbstractObject::XML_PREFIX . ':' . $nameOffset, $element);
-        if ($sublist->length > 0) {
-            return true;
-        }
-
-        return false;
+        return $this->xpathExists('./@' . $nameOffset)                                           // First, search for an attribute
+               || $this->xpathExists('./' . TwigEngine::XML_PREFIX_PHPDOC . ':' . $nameOffset);        // Then search a child
     }
     /**
      * Get an element
      *
      * @param string|int $nameOffset The element name | The element offset
      *
-     * @return bool Tru if the element exists, else False
+     * @return XmlWrapper|null The element
      */
     public function elementGet ($nameOffset): ?XmlWrapper {
         // Case of an offset => get element from list
@@ -118,22 +172,13 @@ class XmlWrapper extends IteratorIterator implements Countable, ArrayAccess {
             return XmlWrapper::createFromNode($this->list[$nameOffset]);
         }
 
-        // Case of a name
-        $element = $this->getFirstElement();
-        if (is_null($element)) {
-            return null;
-        }
-
         // First, search for an attribute
-        $sublist = $this->xpath->query('./@' . $nameOffset, $element);
-        if ($sublist->length > 0) {
-            return new XmlWrapper($sublist);
+        if (!is_null($out = $this->xpathGet('./@' . $nameOffset))) {
+            return $out;
         }
-
         // Then search a child
-        $sublist = $this->xpath->query('./' . AbstractObject::XML_PREFIX . ':' . $nameOffset, $element);
-        if ($sublist->length > 0) {
-            return new XmlWrapper($sublist);
+        if (!is_null($out = $this->xpathGet('./' . TwigEngine::XML_PREFIX_PHPDOC . ':' . $nameOffset))) {
+            return $out;
         }
 
         return null;

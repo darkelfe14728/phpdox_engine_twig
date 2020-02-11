@@ -5,13 +5,9 @@ namespace TheSeer\phpDox\Generator\Engine\Objects;
 use TheSeer\fDOM\fDOMDocument;
 use TheSeer\fDOM\fDOMException;
 use TheSeer\phpDox\Collector\AbstractUnitObject;
+use TheSeer\phpDox\Generator\Engine\TwigEngine;
 
 abstract class AbstractObject implements IObject {
-    /**
-     * @var string The XML namespace prefix for phpDox
-     */
-    public const XML_PREFIX = 'dox';
-
     /**
      * @var fDOMDocument The DOM structure
      */
@@ -25,7 +21,7 @@ abstract class AbstractObject implements IObject {
     public function __construct (fDOMDocument $dom) {
         $this->dom = $dom;
         try {
-            $this->dom->getDOMXPath()->registerNamespace(self::XML_PREFIX, AbstractUnitObject::XMLNS);
+            $this->dom->getDOMXPath()->registerNamespace(TwigEngine::XML_PREFIX_PHPDOC, AbstractUnitObject::XMLNS);
         }
         catch(fDOMException $e) {}
     }
@@ -34,6 +30,6 @@ abstract class AbstractObject implements IObject {
      * @inheritDoc
      */
     public function getObjectValue (): ?XmlWrapper {
-        return new XmlWrapper($this->dom->query('/' . self::XML_PREFIX . ':' . $this->getVarName()));
+        return new XmlWrapper($this->dom->query('/' . TwigEngine::XML_PREFIX_PHPDOC . ':' . $this->getVarName()));
     }
 }
