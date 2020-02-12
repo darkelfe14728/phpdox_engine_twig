@@ -1,0 +1,49 @@
+:root {
+    --header-size: 105px
+}
+
+
+header {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+}
+
+header > div {
+    font-size : 1.5rem;
+    font-weight: bold;
+    padding-left: 5px;
+}
+header > div > span#project_resume {
+    position: relative;
+    top: -10px;
+
+    font-size : 1rem;
+    font-weight: normal;
+}
+
+header > nav {
+    background-image : linear-gradient(rgb(213, 221, 236), rgb(178, 192, 221));
+    border-top       : 1px solid rgb(154, 175, 219);
+    border-bottom    : 1px solid rgb(154, 175, 219);
+}
+header > nav > ul {
+    display    : flex;
+    margin     : 0;
+    padding    : 0;
+    list-style : none;
+}
+header > nav > ul > li {
+    padding      : 5px 10px;
+    border-right : 1px solid rgb(154, 175, 219);
+}
+header > nav > ul > li:hover {
+    background-image : linear-gradient(rgb(45, 65, 102), rgb(69, 100, 153));
+}
+header > nav > ul > li > a, header > nav > ul > li > a:visited, header > nav > ul > li > a:active {
+    color : rgb(45, 65, 102);
+}
+header > nav > ul > li:hover > a, header > nav > ul > li:hover > a:visited, header > nav > ul > li:hover > a:active {
+    color : rgb(255, 255, 255);
+}

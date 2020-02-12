@@ -4,11 +4,14 @@
         <require file="../bootstrap.php"/>
     </bootstrap>
     <project name="PHPDox Generator : Twig" source="${basedir}/../src" workdir="${basedir}/build">
+        <resume>A phpDox generator using Twig</resume>
+        <description>A generator engine for phpDox using Twig technology</description>
+
         <collector publiconly="false" backend="parser" encoding="utf-8">
             <include mask="*.php"/>
             <exclude mask=""/>
 
-            <inheritance resolve="true"/>
+            <inheritance resolve="false"/>
         </collector>
 
         <generator output="${basedir}/output">

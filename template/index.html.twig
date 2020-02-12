@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block head_title %}Overview{% endblock %}
+{% block title %}Overview{% endblock %}
+
+{% block page %}
+    <section>
+        <h2>{{ project.name }}</h2>
+        {% if project.resume %}
+            <p>{{ project.resume }}</p>
+        {% endif %}
+        {% if project.description %}
+            <p>{{ project.description }}</p>
+        {% endif %}
+    </section>
+{% endblock %}
+

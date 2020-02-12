@@ -1,0 +1,8 @@
+footer > div {
+    text-align: right;
+    font-size: 0.7rem;
+    padding-right : 5px;;
+}
+footer div > span#generated_using {
+    font-size: 0.6rem;
+}

@@ -1,0 +1,28 @@
+@import "header.css";
+@import "footer.css";
+
+div#page {
+    margin-top: var(--header-size);
+}
+
+a, a:visited, a:active {
+    color: rgb(70, 101, 162);
+    text-decoration: none;
+}
+
+div#page > h1 {
+    text-align: center;
+    font-family: sans-serif;
+    background-color: rgb(249, 250, 252);
+    border-bottom: 1px solid rgb(178, 192, 221);
+}
+div#page > *[id]::before {
+    display: block;
+    content: "";
+
+    height: var(--header-size);
+    margin-top: calc(0 - var(--header-size));
+
+    visibility: hidden;
+    pointer-events: none;
+}

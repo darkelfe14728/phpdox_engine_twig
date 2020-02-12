@@ -1,0 +1,10 @@
+{% set build = index.xpathGet('./' ~ XML_PREFIX_PHPDOC ~ ':enrichments/' ~ XML_PREFIX_PHPDOC ~ ':enrichment[@type="build"]') %}
+<footer>
+    <div id="generated">
+        Generated at {{ buid.date.iso|date('m/d/Y H:i:s') }}<br/>
+        <span id="generated_using">
+            Using {{ build.phpdox.info }}<br/>
+            Using phpDox Twig Generator
+        </span>
+    </div>
+</footer>

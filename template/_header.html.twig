@@ -1,7 +1,25 @@
 <header>
-    <div id="project">{{ project.name }}</div>
+    <div id="project">
+        {{ project.name }}
+        {% if project.resume %}
+        <br/><span id="project_resume">{{ project.resume }}</span>
+        {% endif %}
+    </div>
     <nav>
         <ul>
+            <li><a href="index.html">Overview</a></li>
+            {% if index.namespace %}
+                <li><a href="namespaces.html">Namespaces</a></li>
+            {% endif %}
+            {% if index.xpathExists('.//' ~ XML_PREFIX_PHPDOC ~ ':interface') %}
+                <li><a href="interfaces.html">Interfaces</a></li>
+            {% endif %}
+            {% if index.xpathExists('.//' ~ XML_PREFIX_PHPDOC ~ ':class') %}
+                <li><a href="classes.html">Classes</a></li>
+            {% endif %}
+            {% if index.xpathExists('.//' ~ XML_PREFIX_PHPDOC ~ ':trait') %}
+                <li><a href="traits.html">Traits</a></li>
+            {% endif %}
         </ul>
     </nav>
 </header>
