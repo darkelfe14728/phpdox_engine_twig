@@ -1,28 +1,28 @@
 {% extends 'base.html.twig' %}
 
-{% block head_title %}Interfaces{% endblock %}
-{% block title %}Interfaces{% endblock %}
+{% block head_title %}Classes{% endblock %}
+{% block title %}Classes{% endblock %}
 
 {% block page %}
     {% for namespace in index.namespace %}
-        {% if namespace.interface %}
+        {% if namespace.class %}
             <section>
                 <h2 id="{{ namespace.name|escape('id') }}">{{ namespace.name }}</h2>
 
                 <table>
                     <thead>
                         <tr>
-                            <th>Interface</th>
+                            <th>Class</th>
                             <th>Description</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for interface in namespace.interface %}
+                        {% for class in namespace.class %}
                             <tr>
                                 <td>
-                                    <a href="interfaces/{{ (namespace.name ~ '\\' ~ interface.name)|escape('id') ~ '.' ~ FILE_EXTENSION }}">{{ interface.name }}</a>
+                                    <a href="classes/{{ (namespace.name ~ '\\' ~ class.name)|escape('id') ~ '.' ~ FILE_EXTENSION }}">{{ class.name }}</a>
                                 </td>
-                                <td>{{ interface.description|default(' ') }}</td>
+                                <td>{{ class.description|default(' ') }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

@@ -153,6 +153,12 @@ class TwigEngine implements EngineInterface {
         $this->logger->debug('Render interface list');
         $this->render('interfaces', null, null);
 
+        $this->logger->debug('Render class list');
+        $this->render('classes', null, null);
+
+        $this->logger->debug('Render trait list');
+        $this->render('traits', null, null);
+
         $resourcesDir = $this->config->getResourceDirectory();
         if (!empty($resourcesDir)) {
             $this->logger->debug('Copy resources directory content : ' . $resourcesDir);
