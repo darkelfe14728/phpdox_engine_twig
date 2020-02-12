@@ -4,7 +4,12 @@ namespace TheSeer\phpDox\Generator\Engine\Objects;
 
 use TheSeer\phpDox\Generator\ClassEndEvent;
 
-class ClassObject extends AbstractObject {
+/**
+ * Object for classes
+ *
+ * @package TheSeer\phpDox\Generator\Engine\Objects
+ */
+class ClassObject extends AbstractXmlObject {
     /**
      * Create a new object
      *

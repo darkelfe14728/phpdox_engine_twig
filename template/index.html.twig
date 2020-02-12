@@ -10,7 +10,7 @@
             <p>{{ project.resume }}</p>
         {% endif %}
         {% if project.description %}
-            <p>{{ project.description }}</p>
+            <p>{{ project.description.asXml()|raw }}</p>
         {% endif %}
     </section>
 {% endblock %}

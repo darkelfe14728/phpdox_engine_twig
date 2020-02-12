@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="css/namespaces.css">
+{% endblock %}
+
+{% block head_title %}Namespaces{% endblock %}
+{% block title %}Namespaces{% endblock %}
+
+{% block page %}
+    <section>
+        <table id="namespaces">
+            <thead>
+                <tr>
+                    <th>Namespace</th>
+                    <th>Interfaces</th>
+                    <th>Classes</th>
+                    <th>Traits</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for namespace in index.namespace %}
+                    {% set namespace_id = namespace.name|escape('id') %}
+                    <tr>
+                        <td>{{ namespace.name }}</td>
+                        <td>
+                            {% if namespace.interface|length > 0 %}
+                                <a href="interfaces.{{ FILE_EXTENSION }}#{{ namespace_id }}">{{ namespace.interface|length }}</a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if namespace.class|length > 0 %}
+                                <a href="classes.{{ FILE_EXTENSION }}#{{ namespace_id }}">{{ namespace.class|length }}</a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if namespace.trait|length > 0 %}
+                                <a href="traits.{{ FILE_EXTENSION }}#{{ namespace_id }}">{{ namespace.trait|length }}</a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% endblock %}

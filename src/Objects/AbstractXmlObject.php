@@ -5,7 +5,7 @@ namespace TheSeer\phpDox\Generator\Engine\Objects;
 use TheSeer\fDOM\fDOMDocument;
 use TheSeer\phpDox\Generator\Engine\TwigEngine;
 
-abstract class AbstractObject implements IObject {
+abstract class AbstractXmlObject implements IObject {
     /**
      * @var XmlWrapper The DOM structure
      */

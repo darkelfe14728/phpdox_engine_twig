@@ -5,7 +5,7 @@
     </bootstrap>
     <project name="PHPDox Generator : Twig" source="${basedir}/../src" workdir="${basedir}/build">
         <resume>A phpDox generator using Twig</resume>
-        <description>A generator engine for phpDox using Twig technology</description>
+        <description>A generator engine for <a href="http://phpdox.de/">phpDox</a> using <a href="https://twig.symfony.com/">Twig</a> technology</description>
 
         <collector publiconly="false" backend="parser" encoding="utf-8">
             <include mask="*.php"/>

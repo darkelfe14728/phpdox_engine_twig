@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block head_title %}Interfaces{% endblock %}
+{% block title %}Interfaces{% endblock %}
+
+{% block page %}
+    {% for namespace in index.namespace %}
+        {% if namespace.interface %}
+            <section>
+                <h2 id="{{ namespace.name|escape('id') }}">{{ namespace.name }}</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Interface</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for interface in namespace.interface %}
+                            <tr>
+                                <td>
+                                    <a href="interfaces/{{ (namespace.name ~ '\\' ~ interface.name)|escape('id') ~ '.' ~ FILE_EXTENSION }}">{{ interface.name }}</a>
+                                </td>
+                                <td>{{ interface.description|default('&nbsp;') }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+        {% endif %}
+    {% endfor %}
+{% endblock %}

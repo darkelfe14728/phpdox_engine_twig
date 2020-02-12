@@ -26,3 +26,19 @@ div#page > *[id]::before {
     visibility: hidden;
     pointer-events: none;
 }
+
+section {
+    margin-left: 10px;
+}
+
+table {
+    width           : 50%;
+    border-spacing  : 0;
+    border-collapse : collapse;
+    margin          : 0 0 20px 0;
+}
+table td, table th {
+    border  : 1px solid rgb(178, 192, 221);
+    margin  : 0;
+    padding : 0 5px;
+}

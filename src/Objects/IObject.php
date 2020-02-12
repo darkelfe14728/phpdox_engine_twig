@@ -25,7 +25,7 @@ interface IObject {
     /**
      * The object value
      *
-     * @return XmlWrapper|null The object value
+     * @return mixed|null The object value
      */
-    public function getObjectValue(): ?XmlWrapper;
+    public function getObjectValue();
 }

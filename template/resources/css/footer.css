@@ -1,8 +1,13 @@
+footer {
+    border-top  : 1px solid rgb(178, 192, 221);
+    padding-top : 5px;;
+}
+
 footer > div {
-    text-align: right;
-    font-size: 0.7rem;
+    text-align    : right;
+    font-size     : 0.7rem;
     padding-right : 5px;;
 }
 footer div > span#generated_using {
-    font-size: 0.6rem;
+    font-size : 0.6rem;
 }

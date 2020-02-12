@@ -18,6 +18,7 @@ use TheSeer\phpDox\Generator\PHPDoxEndEvent;
 use TheSeer\phpDox\Generator\PHPDoxStartEvent;
 use Twig\Environment;
 use Twig\Error\Error;
+use Twig\Extension\EscaperExtension;
 use Twig\Loader\FilesystemLoader;
 
 /**
@@ -52,19 +53,6 @@ class TwigEngine implements EngineInterface {
     public function __construct (TwigEngineConfig $config) {
         $this->config = $config;
     }
-    /**
-     * Register phpDox event handlers
-     *
-     * @param EventHandlerRegistry $registry
-     *
-     * @throws EventHandlerRegistryException When handler registration failed
-     */
-    public function registerEventHandlers (EventHandlerRegistry $registry): void {
-        $registry->addHandler('phpdox.start', $this, 'start');
-        $registry->addHandler('phpdox.end', $this, 'finish');
-
-        $registry->addHandler('class.end', $this, 'renderClass');
-    }
 
     /**
      * Create the logger
@@ -82,14 +70,28 @@ class TwigEngine implements EngineInterface {
         $this->logger->pushHandler($handler);
     }
     /**
-     * Transform an object name (FQDN) to an usable filename
+     * Escape an object name (FQDN)
      *
      * @param string $objectName The object name
      *
-     * @return string The filename
+     * @return string The escaped name
      */
-    private function objectNameToFileName (string $objectName): string {
+    public static function escapeObjectName (string $objectName): string {
         return preg_replace('@[/\\\\:]@i', '_', $objectName);
+    }
+
+    /**
+     * Register phpDox event handlers
+     *
+     * @param EventHandlerRegistry $registry
+     *
+     * @throws EventHandlerRegistryException When handler registration failed
+     */
+    public function registerEventHandlers (EventHandlerRegistry $registry): void {
+        $registry->addHandler('phpdox.start', $this, 'start');
+        $registry->addHandler('phpdox.end', $this, 'finish');
+
+        $registry->addHandler('class.end', $this, 'renderClass');
     }
 
     /**
@@ -121,7 +123,15 @@ class TwigEngine implements EngineInterface {
         );
         $this->logger->debug('Twig is ready');
 
+        $this->twig->getExtension(EscaperExtension::class)->setEscaper('id',
+            function (/** @noinspection PhpUnusedParameterInspection */ Environment $env, string $string, /** @noinspection PhpUnusedParameterInspection */ string $charset): string {
+                return self::escapeObjectName($string);
+            }
+        );
+
         $this->twig->addGlobal('XML_PREFIX_PHPDOC', self::XML_PREFIX_PHPDOC);
+        $this->twig->addGlobal('FILE_EXTENSION', $this->config->getFileExtension());
+
         $this->twig->addGlobal('project', XmlWrapper::createFromNode($this->config->getProjectNode(), ConfigLoader::XMLNS));
         $this->twig->addGlobal('index', XmlWrapper::createFromNode($event->getIndex()->asDom()->documentElement));
         $this->twig->addGlobal('source_tree', XmlWrapper::createFromNode($event->getTree()->asDom()->documentElement));
@@ -136,6 +146,12 @@ class TwigEngine implements EngineInterface {
     public function finish (/** @noinspection PhpUnusedParameterInspection */ PHPDoxEndEvent $event): void {
         $this->logger->debug('Render index');
         $this->render('index', null, null);
+
+        $this->logger->debug('Render namespace list');
+        $this->render('namespaces', null, null);
+
+        $this->logger->debug('Render interface list');
+        $this->render('interfaces', null, null);
 
         $resourcesDir = $this->config->getResourceDirectory();
         if (!empty($resourcesDir)) {
@@ -192,7 +208,7 @@ class TwigEngine implements EngineInterface {
         $templateFile = $templateName . '.' . $this->config->getFileExtension() . '.twig';
         $outputDir = $this->config->getOutputDirectory() . (empty($outputSubdirectory) ? '' : '/' . $outputSubdirectory) . '/';
         $outputFile = $outputDir
-                      . (is_null($object) ? basename($templateName) : $this->objectNameToFileName($object->getObjectName()))
+                      . (is_null($object) ? basename($templateName) : self::escapeObjectName($object->getObjectName()))
                       . '.' . $this->config->getFileExtension();
 
         if (!is_dir($outputDir)) {
@@ -228,7 +244,7 @@ class TwigEngine implements EngineInterface {
     /**
      * Render a class
      *
-     * @param ClassEndEvent $event The class event
+     * @param ClassEndEvent $event The event
      */
     public function renderClass (ClassEndEvent $event): void {
         $class = new ClassObject($event);
