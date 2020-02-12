@@ -34,11 +34,18 @@ class XmlWrapper extends IteratorIterator implements Countable, ArrayAccess {
     /**
      * Create a new wrapper
      *
-     * @param DOMNodeList $list The DOM elements
+     * @param DOMNodeList $list  The DOM elements
+     * @param string      $nsUrl The URL corresponding to {@see TwigEngine::XML_PREFIX_PHPDOC} prefix
      */
-    public function __construct (DOMNodeList $list) {
+    public function __construct (DOMNodeList $list, string $nsUrl = AbstractUnitObject::XMLNS) {
         $this->list = $list;
-        $this->xpath = null;
+
+        if ($this->list->length > 0) {
+            /** @var DOMElement $element */$element = $this->list[0];
+
+            $this->xpath = new DOMXPath($element->ownerDocument);
+            $this->xpath->registerNamespace(TwigEngine::XML_PREFIX_PHPDOC, $nsUrl);
+        }
 
         parent::__construct($this->list);
     }
@@ -46,14 +53,15 @@ class XmlWrapper extends IteratorIterator implements Countable, ArrayAccess {
      * Create a new wrapper from an alone node (not a DOMNodeList)
      *
      * @param DOMNode $node The node
+     * @param string      $nsUrl The URL corresponding to {@see TwigEngine::XML_PREFIX_PHPDOC} prefix
      *
      * @return XmlWrapper The new wrapper
      */
-    public static function createFromNode (DOMNode $node): XmlWrapper {
+    public static function createFromNode (DOMNode $node, string $nsUrl = AbstractUnitObject::XMLNS): XmlWrapper {
         $dom = new DOMDocument();
         $dom->appendChild( $dom->importNode($node, true));
 
-        return new XmlWrapper($dom->childNodes);
+        return new XmlWrapper($dom->childNodes, $nsUrl);
     }
 
     /**
@@ -65,13 +73,7 @@ class XmlWrapper extends IteratorIterator implements Countable, ArrayAccess {
         if ($this->list->length == 0)
             return null;
 
-        /** @var DOMElement $element */$element = $this->list[0];
-        if (is_null($this->xpath)) {
-            $this->xpath = new DOMXPath($element->ownerDocument);
-            $this->xpath->registerNamespace(TwigEngine::XML_PREFIX_PHPDOC, AbstractUnitObject::XMLNS);
-        }
-
-        return $element;
+        return $this->list[0];
     }
     /**
      * The list, directly as DOMNodeList
@@ -156,8 +158,9 @@ class XmlWrapper extends IteratorIterator implements Countable, ArrayAccess {
             return isset($this->list[$nameOffset]);
         }
 
-        return $this->xpathExists('./@' . $nameOffset)                                           // First, search for an attribute
-               || $this->xpathExists('./' . TwigEngine::XML_PREFIX_PHPDOC . ':' . $nameOffset);        // Then search a child
+        return $this->xpathExists('./@' . $nameOffset)                                              // First, search for an attribute
+               || $this->xpathExists('./' . TwigEngine::XML_PREFIX_PHPDOC . ':' . $nameOffset)      // Then search a child (with PHPDox prefix)
+               || $this->xpathExists('./' . $nameOffset);                                           // Then search a child (without prefix)
     }
     /**
      * Get an element
@@ -176,8 +179,12 @@ class XmlWrapper extends IteratorIterator implements Countable, ArrayAccess {
         if (!is_null($out = $this->xpathGet('./@' . $nameOffset))) {
             return $out;
         }
-        // Then search a child
+        // Then search a child (with PHPDox prefix)
         if (!is_null($out = $this->xpathGet('./' . TwigEngine::XML_PREFIX_PHPDOC . ':' . $nameOffset))) {
+            return $out;
+        }
+        // Then search a child (without prefix)
+        if (!is_null($out = $this->xpathGet('./' . $nameOffset))) {
             return $out;
         }
 

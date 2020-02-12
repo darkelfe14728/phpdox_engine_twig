@@ -3,7 +3,6 @@
 namespace TheSeer\phpDox\Generator\Engine\Objects;
 
 use TheSeer\phpDox\Generator\ClassEndEvent;
-use TheSeer\phpDox\Generator\Engine\TwigEngine;
 
 class ClassObject extends AbstractObject {
     /**
@@ -25,6 +24,6 @@ class ClassObject extends AbstractObject {
      * @inheritDoc
      */
     public function getObjectName (): string {
-        return $this->dom->queryOne('/' . TwigEngine::XML_PREFIX_PHPDOC . ':class/@full')->textContent;
+        return (string)$this->xml['full'];
     }
 }

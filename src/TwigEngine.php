@@ -2,9 +2,14 @@
 
 namespace TheSeer\phpDox\Generator\Engine;
 
+use DirectoryIterator;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use TheSeer\phpDox\Collector\AbstractUnitObject;
+use TheSeer\phpDox\ConfigLoader;
 use TheSeer\phpDox\Generator\ClassEndEvent;
 use TheSeer\phpDox\Generator\Engine\Objects\ClassObject;
 use TheSeer\phpDox\Generator\Engine\Objects\IObject;
@@ -22,7 +27,7 @@ use Twig\Loader\FilesystemLoader;
  */
 class TwigEngine implements EngineInterface {
     /**
-     * @var string The XML namespace prefix for phpDox
+     * @var string The XML namespace prefix for {@see AbstractUnitObject::XMLNS phpDox src}
      */
     public const XML_PREFIX_PHPDOC = 'phpdox';
 
@@ -66,7 +71,7 @@ class TwigEngine implements EngineInterface {
      *
      * @param string $logFile The log file
      */
-    private function createLogger(string $logFile): void {
+    private function createLogger (string $logFile): void {
         $formatter = new LineFormatter("[%datetime%] [%channel%] %level_name%: %message% %context% %extra%\n", 'Y-m-d H:i:s');
         $formatter->ignoreEmptyContextAndExtra(true);
 
@@ -117,7 +122,7 @@ class TwigEngine implements EngineInterface {
         $this->logger->debug('Twig is ready');
 
         $this->twig->addGlobal('XML_PREFIX_PHPDOC', self::XML_PREFIX_PHPDOC);
-        $this->twig->addGlobal('project', XmlWrapper::createFromNode($this->config->getProjectNode()));
+        $this->twig->addGlobal('project', XmlWrapper::createFromNode($this->config->getProjectNode(), ConfigLoader::XMLNS));
         $this->twig->addGlobal('index', XmlWrapper::createFromNode($event->getIndex()->asDom()->documentElement));
         $this->twig->addGlobal('source_tree', XmlWrapper::createFromNode($event->getTree()->asDom()->documentElement));
 
@@ -128,8 +133,43 @@ class TwigEngine implements EngineInterface {
      *
      * @param PHPDoxEndEvent $event The end event
      */
-    public function finish (/** @noinspection PhpUnusedParameterInspection */PHPDoxEndEvent $event): void {
-        /// TODO copy 'resources' directory
+    public function finish (/** @noinspection PhpUnusedParameterInspection */ PHPDoxEndEvent $event): void {
+        $this->logger->debug('Render index');
+        $this->render('index', null, null);
+
+        $resourcesDir = $this->config->getResourceDirectory();
+        if (!empty($resourcesDir)) {
+            $this->logger->debug('Copy resources directory content : ' . $resourcesDir);
+            if (is_dir($resourcesDir)) {
+                $resourcesDirLength = mb_strlen($resourcesDir);
+                $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($resourcesDir));
+
+                /** @var DirectoryIterator $entry */
+                foreach ($iterator as $entry) {
+                    if ($entry->isDir() && ($entry->getFilename() == '.' || $entry->getFilename() == '..')) {
+                        continue;
+                    }
+
+                    $target = $this->config->getOutputDirectory() . mb_substr($entry->getPathname(), $resourcesDirLength);
+                    $targetDir = dirname($target);
+
+                    if (!is_dir($targetDir)) {
+                        $this->logger->info('Directory "' . $targetDir . '" doesn\'t exist : create');
+                        if (!mkdir($targetDir, 0775, true)) {
+                            $this->logger->error('Unable to create directory "' . $targetDir . "'");
+                            continue;
+                        }
+                    }
+                    if (!copy($entry->getPathname(), $target)) {
+                        $this->logger->error('Failed to copy "' . $entry->getPathname() . '" to "' . $target . '"');
+                        continue;
+                    }
+                }
+            }
+            else {
+                $this->logger->warning('  Invalid directory : ' & $resourcesDir);
+            }
+        }
 
         $this->logger->debug('Close Twig');
         unset($this->twig);
@@ -142,16 +182,18 @@ class TwigEngine implements EngineInterface {
     /**
      * Render a template about an object
      *
-     * @param string  $templateName       The relative path of the template
-     * @param string  $outputSubdirectory The relative output filename (without extension)
-     * @param IObject $object             The object to render
+     * @param string       $templateName       The relative path of the template (without extension)
+     * @param string|null  $outputSubdirectory The subdirectory for output path (Null if none)
+     * @param IObject|null $object             The object to render (Null id none)
      *
      * @return bool True if render succeed, else False
      */
-    private function render (string $templateName, string $outputSubdirectory, IObject $object): bool {
+    private function render (string $templateName, ?string $outputSubdirectory, ?IObject $object): bool {
         $templateFile = $templateName . '.' . $this->config->getFileExtension() . '.twig';
-        $outputDir = $this->config->getOutputDirectory() . '/' . $outputSubdirectory . '/';
-        $outputFile = $outputDir . $this->objectNameToFileName($object->getObjectName()) . '.' . $this->config->getFileExtension();
+        $outputDir = $this->config->getOutputDirectory() . (empty($outputSubdirectory) ? '' : '/' . $outputSubdirectory) . '/';
+        $outputFile = $outputDir
+                      . (is_null($object) ? basename($templateName) : $this->objectNameToFileName($object->getObjectName()))
+                      . '.' . $this->config->getFileExtension();
 
         if (!is_dir($outputDir)) {
             $this->logger->info('Output directory "' . $outputDir . '" is missing : create');
@@ -161,14 +203,15 @@ class TwigEngine implements EngineInterface {
             }
         }
 
+        $context = [];
+        if (!is_null($object)) {
+            $context[$object->getVarName()] = $object->getObjectValue();
+        }
+
         $this->logger->debug('Load template : ' . $templateFile);
         try {
             $tpl = $this->twig->load($templateFile);
-            $output = $tpl->render(
-                [
-                    $object->getVarName() => $object->getObjectValue(),
-                ]
-            );
+            $output = $tpl->render($context);
         }
         catch (Error $e) {
             $this->logger->error('Failed to render using Twig : ' . $e->getMessage(), ['exception' => $e]);
