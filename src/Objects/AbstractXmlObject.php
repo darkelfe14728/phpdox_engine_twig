@@ -5,6 +5,11 @@ namespace TheSeer\phpDox\Generator\Engine\Objects;
 use TheSeer\fDOM\fDOMDocument;
 use TheSeer\phpDox\Generator\Engine\TwigEngine;
 
+/**
+ * Object for XML-based elements
+ *
+ * @package TheSeer\phpDox\Generator\Engine\Objects
+ */
 abstract class AbstractXmlObject implements IObject {
     /**
      * @var XmlWrapper The DOM structure

@@ -12,10 +12,14 @@ use TheSeer\phpDox\Collector\AbstractUnitObject;
 use TheSeer\phpDox\ConfigLoader;
 use TheSeer\phpDox\Generator\ClassEndEvent;
 use TheSeer\phpDox\Generator\Engine\Objects\ClassObject;
+use TheSeer\phpDox\Generator\Engine\Objects\InterfaceObject;
 use TheSeer\phpDox\Generator\Engine\Objects\IObject;
+use TheSeer\phpDox\Generator\Engine\Objects\TraitObject;
 use TheSeer\phpDox\Generator\Engine\Objects\XmlWrapper;
+use TheSeer\phpDox\Generator\InterfaceEndEvent;
 use TheSeer\phpDox\Generator\PHPDoxEndEvent;
 use TheSeer\phpDox\Generator\PHPDoxStartEvent;
+use TheSeer\phpDox\Generator\TraitEndEvent;
 use Twig\Environment;
 use Twig\Error\Error;
 use Twig\Extension\EscaperExtension;
@@ -91,7 +95,9 @@ class TwigEngine implements EngineInterface {
         $registry->addHandler('phpdox.start', $this, 'start');
         $registry->addHandler('phpdox.end', $this, 'finish');
 
+        $registry->addHandler('interface.end', $this, 'renderInterface');
         $registry->addHandler('class.end', $this, 'renderClass');
+        $registry->addHandler('trait.end', $this, 'renderTrait');
     }
 
     /**
@@ -248,6 +254,19 @@ class TwigEngine implements EngineInterface {
         return true;
     }
     /**
+     * Render aa interface
+     *
+     * @param InterfaceEndEvent $event The event
+     */
+    public function renderInterface (InterfaceEndEvent $event): void {
+        $interface = new InterfaceObject($event);
+
+        $this->logger->debug('Render interface ' . $interface->getObjectName());
+        if (!$this->render('interface', 'interfaces', $interface)) {
+            return;
+        }
+    }
+    /**
      * Render a class
      *
      * @param ClassEndEvent $event The event
@@ -257,6 +276,19 @@ class TwigEngine implements EngineInterface {
 
         $this->logger->debug('Render class ' . $class->getObjectName());
         if (!$this->render('class', 'classes', $class)) {
+            return;
+        }
+    }
+    /**
+     * Render a trait
+     *
+     * @param TraitEndEvent $event The event
+     */
+    public function renderTrait (TraitEndEvent $event): void {
+        $trait = new TraitObject($event);
+
+        $this->logger->debug('Render trait ' . $trait->getObjectName());
+        if (!$this->render('trait', 'traits', $trait)) {
             return;
         }
     }
