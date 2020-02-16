@@ -1,7 +1,7 @@
 {
-    "name":              "darkelfe14728/phpdox_generator_twig",
-    "description":       "A phpDox generator using Twig",
-    "keywords":          [ "phpDox", "twig", "generator" ],
+    "name":              "darkelfe14728/phpdox_engine_twig",
+    "description":       "A phpDox engine with Twig templates",
+    "keywords":          [ "phpDox", "twig", "engine" ],
 
     "minimum-stability": "stable",
     "require":           {
@@ -18,7 +18,7 @@
     },
 
     "readme":            "README.md",
-    "homepage":          "https://github.com/darkelfe14728/phpdox_generator_twig",
+    "homepage":          "https://github.com/darkelfe14728/phpdox_engine_twig",
     "license":           "CC-BY-4.0",
     "authors":           [
         {
@@ -28,9 +28,9 @@
     ],
     "support":           {
         "email":  "jul.rosset@gmail.com",
-        "issues": "https://github.com/darkelfe14728/phpdox_generator_twig/issues",
-        "wiki":   "https://github.com/darkelfe14728/phpdox_generator_twig/wiki",
-        "docs":   "https://github.com/darkelfe14728/phpdox_generator_twig/wiki",
-        "source": "https://github.com/darkelfe14728/phpdox_generator_twig"
+        "issues": "https://github.com/darkelfe14728/phpdox_engine_twig/issues",
+        "wiki":   "https://github.com/darkelfe14728/phpdox_engine_twig/wiki",
+        "docs":   "https://github.com/darkelfe14728/phpdox_engine_twig/wiki",
+        "source": "https://github.com/darkelfe14728/phpdox_engine_twig"
     }
 }
