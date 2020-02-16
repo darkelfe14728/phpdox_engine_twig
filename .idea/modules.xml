@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/phpdox_generator_twig.iml" filepath="$PROJECT_DIR$/.idea/phpdox_generator_twig.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/phpdox_engine_twig.iml" filepath="$PROJECT_DIR$/.idea/phpdox_engine_twig.iml" />
     </modules>
   </component>
 </project>
