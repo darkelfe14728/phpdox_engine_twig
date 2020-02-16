@@ -150,7 +150,7 @@ class XmlWrapper extends IteratorIterator implements Countable, ArrayAccess {
      *
      * @param string|int $nameOffset The element name | The element offset
      *
-     * @return bool Tru if the element exists, else False
+     * @return bool True if the element exists, else False
      */
     public function elementExists ($nameOffset): bool {
         // Case of an offset => check if element exists in list
@@ -189,6 +189,19 @@ class XmlWrapper extends IteratorIterator implements Countable, ArrayAccess {
         }
 
         return null;
+    }
+
+    /**
+     * Check if node has text
+     *
+     * @return bool True if the element has text
+     */
+    public function hasText(): bool {
+        if ($this->list->length == 0) {
+            return '';
+        }
+
+        return !empty($this->list[0]->textContent);
     }
 
     /**

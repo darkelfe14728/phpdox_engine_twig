@@ -6,11 +6,11 @@
     <meta name="description" content="{{ project.name }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="manifest" href="site.webmanifest">
-    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="{{ root_path }}site.webmanifest">
+    <link rel="apple-touch-icon" href="{{ root_path }}icon.png">
     <!-- Place favicon.ico in the root directory -->
 
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="{{ root_path }}css/main.css">
     {% block stylesheets %}{% endblock %}
 
     <meta name="theme-color" content="#9AAFDB">
@@ -30,8 +30,8 @@
 
     {% include '_footer.html.twig' %}
 
-    <script src="js/vendor/modernizr-3.8.0.min.js"></script>
+    <script src="{{ root_path }}js/vendor/modernizr-3.8.0.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
-    <script src="js/console.js"></script>
+    <script src="{{ root_path }}js/console.js"></script>
 </body>
 </html>

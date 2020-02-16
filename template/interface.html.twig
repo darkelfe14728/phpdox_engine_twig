@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block head_title %}Interface {{ interface.full }}{% endblock %}
+{% block title %}Interface - {{ interface.full }}{% endblock %}
+
+{% block page %}
+    <section>
+        {% if interface.docblock.description.compact %}
+            <p>{{ interface.docblock.description.compact|docblock }}</p>
+        {% endif %}
+        {% if interface.docblock.description.text %}
+            <p>{{ interface.docblock.description|docblock }}</p>
+        {% endif %}
+    </section>
+{% endblock %}

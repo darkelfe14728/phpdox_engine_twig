@@ -7,18 +7,18 @@
     </div>
     <nav>
         <ul>
-            <li><a href="index.{{ FILE_EXTENSION }}">Overview</a></li>
+            <li><a href="{{ root_path }}index.{{ FILE_EXTENSION }}">Overview</a></li>
             {% if index.namespace %}
-                <li><a href="namespaces.{{ FILE_EXTENSION }}">Namespaces</a></li>
+                <li><a href="{{ root_path }}namespaces.{{ FILE_EXTENSION }}">Namespaces</a></li>
             {% endif %}
             {% if index.xpathExists('.//' ~ XML_PREFIX_PHPDOC ~ ':interface') %}
-                <li><a href="interfaces.{{ FILE_EXTENSION }}">Interfaces</a></li>
+                <li><a href="{{ root_path }}interfaces.{{ FILE_EXTENSION }}">Interfaces</a></li>
             {% endif %}
             {% if index.xpathExists('.//' ~ XML_PREFIX_PHPDOC ~ ':class') %}
-                <li><a href="classes.{{ FILE_EXTENSION }}">Classes</a></li>
+                <li><a href="{{ root_path }}classes.{{ FILE_EXTENSION }}">Classes</a></li>
             {% endif %}
             {% if index.xpathExists('.//' ~ XML_PREFIX_PHPDOC ~ ':trait') %}
-                <li><a href="traits.{{ FILE_EXTENSION }}">Traits</a></li>
+                <li><a href="{{ root_path }}traits.{{ FILE_EXTENSION }}">Traits</a></li>
             {% endif %}
         </ul>
     </nav>

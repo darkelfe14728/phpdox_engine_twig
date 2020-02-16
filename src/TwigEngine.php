@@ -24,6 +24,7 @@ use Twig\Environment;
 use Twig\Error\Error;
 use Twig\Extension\EscaperExtension;
 use Twig\Loader\FilesystemLoader;
+use Twig\TwigFilter;
 
 /**
  * The Twig engine
@@ -73,6 +74,7 @@ class TwigEngine implements EngineInterface {
         $this->logger = new Logger('twig');
         $this->logger->pushHandler($handler);
     }
+
     /**
      * Escape an object name (FQDN)
      *
@@ -82,6 +84,21 @@ class TwigEngine implements EngineInterface {
      */
     public static function escapeObjectName (string $objectName): string {
         return preg_replace('@[/\\\\:]@i', '_', $objectName);
+    }
+    public static function filterDocblock(string $input): string {
+        $output = $input;
+
+        $output = preg_replace(
+            [
+                '@\n@'
+            ],
+            [
+                '<br/>'
+            ],
+            $output
+        );
+
+        return $output;
     }
 
     /**
@@ -129,6 +146,7 @@ class TwigEngine implements EngineInterface {
         );
         $this->logger->debug('Twig is ready');
 
+        $this->twig->addFilter(new TwigFilter('docblock', [ self::class, 'filterDocblock' ], [ 'is_safe' => ['html'] ]));
         $this->twig->getExtension(EscaperExtension::class)->setEscaper('id',
             function (/** @noinspection PhpUnusedParameterInspection */ Environment $env, string $string, /** @noinspection PhpUnusedParameterInspection */ string $charset): string {
                 return self::escapeObjectName($string);
@@ -231,7 +249,9 @@ class TwigEngine implements EngineInterface {
             }
         }
 
-        $context = [];
+        $context = [
+            'root_path' => str_repeat('../', mb_substr_count($outputSubdirectory, '/') + mb_substr_count($outputSubdirectory, '\\') + (empty($outputSubdirectory) ? 0 : 1))
+        ];
         if (!is_null($object)) {
             $context[$object->getVarName()] = $object->getObjectValue();
         }
